@@ -12,6 +12,7 @@ function App() {
         <Main path="/" />
         <RecordForm path="/new" />
         <UpdateRecord path="/edit/:_id" />
+        <Details path="/details/:_id" />
       </Router>
     </Fragment>
   );
@@ -95,7 +96,7 @@ function Table() {
             <tr key={_id}>
               <td>{index + 1}</td>
               <td>
-                <Link to="">{title}</Link>
+                <Link to={`/details/${_id}`}>{title}</Link>
               </td>
               <td>{authors}</td>
               <td>{year}</td>
@@ -116,7 +117,7 @@ function Table() {
                 <Link to={`/edit/${_id}`}>Edit</Link>
               </td>
               <td>
-                <button className="btn btn-link" onClick={deleteEntry(_id)}>
+                <button className="btn" onClick={deleteEntry(_id)}>
                   Delete
                 </button>
               </td>
@@ -373,5 +374,79 @@ RecordForm.defaultProps = {
   org_link: '',
   hl_link: '',
 };
+
+function Details({ _id }) {
+  const [loading, updateLoading] = useState(true);
+  const [data, updateData] = useState({});
+
+  useEffect(() => {
+    updateData(db.findById(_id));
+    updateLoading(false);
+  }, []);
+
+  const deleteEntry = () => {
+    db.remove(_id);
+
+    navigate('/');
+  };
+
+  if (loading) {
+    return <h2>Loading...</h2>;
+  }
+
+  const {
+    title,
+    authors,
+    year,
+    found,
+    notes,
+    points,
+    org_link,
+    hl_link,
+  } = data;
+
+  return (
+    <div>
+      <h1>
+        {title} - <code>{year}</code>
+      </h1>
+      <h4>{authors}</h4>
+      <div>
+        <h2>How I found it?</h2>
+        <p>{found}</p>
+      </div>
+      <div>
+        <h2>My notes</h2>
+        <p>{notes}</p>
+      </div>
+      <div>
+        <h2>Points to revisit</h2>
+        <p>{points}</p>
+      </div>
+      <div>
+        <h2>Links</h2>
+        <p>
+          <a href={org_link} rel="noopener noreferrer" target="_blank">
+            Original Paper
+          </a>{' '}
+          |{'  '}
+          <a href={hl_link} rel="noopener noreferrer" target="_blank">
+            Highlighted Paper
+          </a>
+        </p>
+      </div>
+
+      <div>
+        <h2>Actions</h2>
+        <div>
+          <Link to={`/edit/${_id}`}>Edit</Link> {'            '}
+          <button className="btn" onClick={deleteEntry}>
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default App;
