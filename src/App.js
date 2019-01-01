@@ -410,18 +410,18 @@ function Details({ _id }) {
       <h1>
         {title} - <code>{year}</code>
       </h1>
-      <h4>{authors}</h4>
+      <h6>{authors}</h6>
       <div>
         <h2>How I found it?</h2>
-        <p>{found}</p>
+        <pre>{found}</pre>
       </div>
       <div>
         <h2>My notes</h2>
-        <p>{notes}</p>
+        <pre>{notes}</pre>
       </div>
       <div>
         <h2>Points to revisit</h2>
-        <p>{points}</p>
+        <pre>{points}</pre>
       </div>
       <div>
         <h2>Links</h2>
