@@ -201,11 +201,9 @@ function Modal({ active, toggleActive }) {
           
           Are you sure you want to import the data?`,
                 () => {
-                  if (confirmation) {
-                    db.importData(data);
+                  db.importData(data);
 
-                    window.location.reload();
-                  }
+                  window.location.reload();
                 }
               );
             }}
