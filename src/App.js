@@ -47,7 +47,7 @@ function Header() {
           onClick={() => {
             getConfirmation(
               `Are you sure you want to delete all the data? 
-             *You may want to backup the data first
+              *You may want to backup the data first
             `,
               () => {
                 db.purge();
@@ -194,12 +194,13 @@ function Modal({ active, toggleActive }) {
           </button>
           {'    '}
           <button
+            disabled={!data}
             className="btn btn-primary"
             onClick={() => {
               getConfirmation(
                 `If the data is not in correct format you will lose all saved data. Please backup your data before you import untrusted data.
           
-          Are you sure you want to import the data?`,
+                Are you sure you want to import the data?`,
                 () => {
                   db.importData(data);
 
