@@ -4,6 +4,15 @@ import PropTypes from 'prop-types';
 
 import db from './db';
 
+function getConfirmation(message, onSuccess, onError, onFinally) {
+  if (window.confirm(message)) {
+    onSuccess && onSuccess();
+  } else {
+    onError && onError();
+  }
+  onFinally && onFinally();
+}
+
 function App() {
   return (
     <Fragment>
@@ -36,7 +45,16 @@ function Header() {
         <button
           className="btn btn-link"
           onClick={() => {
-            db.purge();
+            getConfirmation(
+              `Are you sure you want to delete all the data? 
+             *You may want to backup the data first
+            `,
+              () => {
+                db.purge();
+
+                window.location.reload();
+              }
+            );
           }}
         >
           Purge Data
@@ -44,7 +62,7 @@ function Header() {
         <button
           className="btn btn-link"
           onClick={() => {
-            db.backupData();
+            getConfirmation('Are you sure you want to backup the current data?', db.backupData);
           }}
         >
           Backup data
@@ -53,7 +71,11 @@ function Header() {
         <button
           className="btn btn-link"
           onClick={() => {
-            db.retrieveBackup();
+            getConfirmation('Are you sure you want to restore data from the backup?', () => {
+              db.retrieveBackup();
+
+              window.location.reload();
+            });
           }}
         >
           Restore from backup
@@ -174,16 +196,21 @@ function Modal({ active, toggleActive }) {
           <button
             className="btn btn-primary"
             onClick={() => {
-              const confirmation = window.confirm(`If the data is not in correct format you will lose all saved data. Please backup your data before you import untrusted data.
+              getConfirmation(
+                `If the data is not in correct format you will lose all saved data. Please backup your data before you import untrusted data.
           
-          Are you sure you want to import the data?`);
+          Are you sure you want to import the data?`,
+                () => {
+                  if (confirmation) {
+                    db.importData(data);
 
-              if (confirmation) {
-                db.importData(data);
-              }
+                    window.location.reload();
+                  }
+                }
+              );
             }}
           >
-            Submit
+            Import
           </button>
         </div>
       </div>
