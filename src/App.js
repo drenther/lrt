@@ -19,6 +19,8 @@ function App() {
 }
 
 function Header() {
+  const [modalActive, toggleModalActive] = useState(false);
+
   return (
     <header className="navbar">
       <section className="navbar-section">
@@ -29,7 +31,105 @@ function Header() {
           Add New
         </Link>
       </section>
+      <Modal active={modalActive} toggleActive={toggleModalActive} />
+      <section className="navbar-section">
+        <button
+          className="btn btn-link"
+          href="#"
+          onClick={() => {
+            db.backupData();
+          }}
+        >
+          Backup data
+        </button>
+
+        <button
+          className="btn btn-link"
+          href="#"
+          onClick={() => {
+            db.retrieveBackup();
+          }}
+        >
+          Restore from backup
+        </button>
+
+        <button
+          className="btn btn-link"
+          href="#"
+          onClick={() => {
+            toggleModalActive(true);
+          }}
+        >
+          Import data
+        </button>
+        <a
+          className="btn btn-link"
+          href="#"
+          onClick={event => {
+            const data = `data:text/json;charset=utf-8,${encodeURIComponent(db.exportData())}`;
+
+            event.target.setAttribute('href', data);
+            event.target.setAttribute('download', 'papers.db');
+          }}
+        >
+          Export data
+        </a>
+      </section>
     </header>
+  );
+}
+
+function Modal({ active, toggleActive }) {
+  const [data, setData] = useState('');
+
+  const closeModal = event => {
+    event.preventDefault();
+
+    toggleActive(false);
+  };
+
+  return (
+    <div className={`modal modal-lg${active ? ' active' : ''}`}>
+      <a href="#close" className="modal-overlay" aria-label="Close" onClick={closeModal} />
+      <div className="modal-container">
+        <div className="modal-header">
+          <a
+            href="#close"
+            className="btn btn-clear float-right"
+            aria-label="Close"
+            onClick={closeModal}
+          />
+          <div className="modal-title h5">Upload Stringified JSON</div>
+        </div>
+        <div className="modal-body">
+          <textarea
+            className="form-input"
+            cols="100"
+            rows="12"
+            name="json-data"
+            onChange={event => {
+              setData(event.target.value);
+            }}
+          />
+        </div>
+        <div className="modal-footer">
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              const confirmation = window.confirm(`If the data is not in correct format you will lose all saved data. Please backup your data before you import untrusted data.
+          
+          Are you sure you want to import the data?`);
+
+              if (confirmation) {
+                db.importData(data);
+              }
+            }}
+          >
+            Submit
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -79,20 +179,7 @@ function Table() {
       </thead>
       <tbody>
         {listing.map(
-          (
-            {
-              _id,
-              title,
-              authors,
-              year,
-              found,
-              notes,
-              points,
-              org_link,
-              hl_link,
-            },
-            index
-          ) => (
+          ({ _id, title, authors, year, found, notes, points, org_link, hl_link }, index) => (
             <tr key={_id}>
               <td>{index + 1}</td>
               <td>
@@ -129,17 +216,7 @@ function Table() {
   );
 }
 
-function RecordForm({
-  _id,
-  title,
-  authors,
-  year,
-  found,
-  notes,
-  points,
-  org_link,
-  hl_link,
-}) {
+function RecordForm({ _id, title, authors, year, found, notes, points, org_link, hl_link }) {
   const [formFieldsState, updateFormFieldsState] = useReducer(
     function(state, { name, value }) {
       return { ...state, [name]: value };
@@ -166,14 +243,10 @@ function RecordForm({
   const onSubmit = event => {
     event.preventDefault();
 
-    const invalids = Object.entries(formFieldsState).filter(
-      ([key, value]) => !Boolean(value)
-    );
+    const invalids = Object.entries(formFieldsState).filter(([key, value]) => !Boolean(value));
 
     if (invalids.length) {
-      alert(
-        `${invalids.map(([key, value]) => key).join(' ')} - fields are empty`
-      );
+      alert(`${invalids.map(([key, value]) => key).join(' ')} - fields are empty`);
     } else {
       if (_id) db.update(_id, formFieldsState);
       else db.add(formFieldsState);
@@ -394,16 +467,7 @@ function Details({ _id }) {
     return <h2>Loading...</h2>;
   }
 
-  const {
-    title,
-    authors,
-    year,
-    found,
-    notes,
-    points,
-    org_link,
-    hl_link,
-  } = data;
+  const { title, authors, year, found, notes, points, org_link, hl_link } = data;
 
   return (
     <div>
