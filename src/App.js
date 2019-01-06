@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useReducer, Fragment } from 'react';
+import React, { useEffect, useState, useReducer, useRef, Fragment } from 'react';
 import { Link, Router, navigate } from '@reach/router';
 import PropTypes from 'prop-types';
 
@@ -35,7 +35,14 @@ function Header() {
       <section className="navbar-section">
         <button
           className="btn btn-link"
-          href="#"
+          onClick={() => {
+            db.purge();
+          }}
+        >
+          Purge Data
+        </button>
+        <button
+          className="btn btn-link"
           onClick={() => {
             db.backupData();
           }}
@@ -45,7 +52,6 @@ function Header() {
 
         <button
           className="btn btn-link"
-          href="#"
           onClick={() => {
             db.retrieveBackup();
           }}
@@ -55,7 +61,6 @@ function Header() {
 
         <button
           className="btn btn-link"
-          href="#"
           onClick={() => {
             toggleModalActive(true);
           }}
@@ -64,7 +69,7 @@ function Header() {
         </button>
         <a
           className="btn btn-link"
-          href="#"
+          href="#download"
           onClick={event => {
             const data = `data:text/json;charset=utf-8,${encodeURIComponent(db.exportData())}`;
 
@@ -81,6 +86,21 @@ function Header() {
 
 function Modal({ active, toggleActive }) {
   const [data, setData] = useState('');
+  const [fileLoaded, setFileLoadedState] = useState(false);
+  const [fileContentLoaded, setFileContentLoadedState] = useState(false);
+
+  const fileRef = useRef();
+  const fileReader = useRef(new FileReader());
+
+  const handleFileUpload = event => {
+    const content = event.target.result;
+    setData(content);
+    setFileContentLoadedState(true);
+  };
+
+  useEffect(() => {
+    fileReader.current.onload = handleFileUpload;
+  }, []);
 
   const closeModal = event => {
     event.preventDefault();
@@ -99,20 +119,58 @@ function Modal({ active, toggleActive }) {
             aria-label="Close"
             onClick={closeModal}
           />
-          <div className="modal-title h5">Upload Stringified JSON</div>
+          <div className="modal-title h5">Upload .db Data</div>
         </div>
         <div className="modal-body">
-          <textarea
-            className="form-input"
-            cols="100"
-            rows="12"
-            name="json-data"
-            onChange={event => {
-              setData(event.target.value);
-            }}
-          />
+          <div className="form-group">
+            <label className="form-label" htmlFor="db-paste">
+              Paste .db content here
+            </label>
+            {fileContentLoaded && <code>*Content loaded from file</code>}
+            <textarea
+              className="form-input"
+              cols="100"
+              rows="8"
+              name="db-paste"
+              value={data}
+              onChange={event => {
+                setData(event.target.value);
+                setFileContentLoadedState(false);
+              }}
+            />
+          </div>
+          <h6 className="text-center">OR</h6>
+          <div className="form-group">
+            <label className="form-label" htmlFor="db-file">
+              Upload a .db file
+            </label>
+            <input
+              className="form-input"
+              type="file"
+              name="db-file"
+              ref={fileRef}
+              onChange={event => {
+                if (event.target.files[0]) {
+                  setFileLoadedState(true);
+                } else {
+                  setFileLoadedState(false);
+                }
+              }}
+            />
+          </div>
         </div>
         <div className="modal-footer">
+          <button
+            className="btn"
+            disabled={!fileLoaded}
+            onClick={() => {
+              const file = fileRef.current.files[0];
+              fileReader.current.readAsText(file, 'utf-8');
+            }}
+          >
+            Read file
+          </button>
+          {'    '}
           <button
             className="btn btn-primary"
             onClick={() => {

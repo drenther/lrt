@@ -83,6 +83,10 @@ class DB {
       console.error(err);
     }
   };
+
+  purge = () => {
+    localStorage.removeItem(DB_NAME);
+  };
 }
 
 const db = new DB();
