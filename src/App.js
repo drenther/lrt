@@ -3,6 +3,7 @@ import { Link, Router, navigate } from '@reach/router';
 import PropTypes from 'prop-types';
 
 import db from './db';
+import { generateCSV } from './utils/csv';
 
 function getConfirmation(message, onSuccess, onError, onFinally) {
   if (window.confirm(message)) {
@@ -91,15 +92,29 @@ function Header() {
         </button>
         <a
           className="btn btn-link"
-          href="#download"
+          href="#download_json"
           onClick={event => {
             const data = `data:text/json;charset=utf-8,${encodeURIComponent(db.exportData())}`;
 
             event.target.setAttribute('href', data);
-            event.target.setAttribute('download', 'papers.db');
+            event.target.setAttribute('download', 'papers.db.json');
           }}
         >
-          Export data
+          Export JSON
+        </a>
+        <a
+          className="btn btn-link"
+          href="#download_csv"
+          onClick={event => {
+            const data = `data:text/csv;charset=utf-8,${encodeURIComponent(
+              generateCSV(db.exportData())
+            )}`;
+
+            event.target.setAttribute('href', data);
+            event.target.setAttribute('download', 'papers.db.csv');
+          }}
+        >
+          Export CSV
         </a>
       </section>
     </header>
